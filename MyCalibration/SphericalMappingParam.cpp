@@ -6,7 +6,7 @@ int SphericalMappingParam::_width = -1;
 int SphericalMappingParam::_height = -1;
 int SphericalMappingParam::radius = -1;
 int SphericalMappingParam::N_value = 5;
-int SphericalMappingParam::Threshold_value = 255;
+int SphericalMappingParam::Threshold_value = 40;
 string SphericalMappingParam::win_name = "SphericalMappingParam";
 Point2i SphericalMappingParam::center = Point2i(-1, -1);
 int SphericalMappingParam::Threshold_max_value = 255;
@@ -15,18 +15,12 @@ int SphericalMappingParam::N_max_value = 15;
 string SphericalMappingParam::N_trackbar_name = "N(0-15)";
 Mat SphericalMappingParam::image = Mat();
 //鱼眼镜头的视场角
-const double SphericalMappingParam::FOV = PI / 180.0*185.0;
-
-vector<vector<Point>> SphericalMappingParam::lines;
-string SphericalMappingParam::check_win_name = "Check Verify";
-vector<Point> SphericalMappingParam::points;
+const double SphericalMappingParam::FOV = PI;
 
 int SphericalMappingParam::CalculateParam(Mat img)
 {
 	_width = img.cols;
 	_height = img.rows;
-	imshow("123", img);
-	waitKey();
 	image = img;
 	cout << "Find the circular region in image:" << endl;
 	namedWindow(win_name, CV_WINDOW_NORMAL);
@@ -56,7 +50,6 @@ void SphericalMappingParam::On_Threshold_Change(int Threshold_value, void* parma
 	if (image.data)
 		revisedScanLineMethod(image, center, radius, Threshold_value, N_value);
 }
-
 void SphericalMappingParam::revisedScanLineMethod(Mat imgOrg, Point2i& center, int& radius, int threshold, int N)
 {
 	Mat src, gray;
@@ -95,12 +88,19 @@ void SphericalMappingParam::revisedScanLineMethod(Mat imgOrg, Point2i& center, i
 					flag++;
 
 					ptMax1.y = i;
-
+					//cout << "horizontal top:" << endl;
+					//cout << "ptMax1=(" << ptMax1.x << ", " << ptMax1.y << ")" << endl;
 					points.push_back(ptMax1);
 					goto top_label;
 				}
 			}
 		top_label:
+
+#ifdef _SHOW_POINTS_
+			circle(src, ptMax1, 5, Scalar(0, 255, 255), -1);
+			imshow("src", src);
+			cv::waitKey();
+#endif
 
 			for (int i = imgSize.height - 1; i >= 0; i--)
 			{
@@ -110,13 +110,24 @@ void SphericalMappingParam::revisedScanLineMethod(Mat imgOrg, Point2i& center, i
 					flag++;
 
 					ptMax2.y = i;
-					
+					//cout << "horizontal bottom:" << endl;
+					//cout << "ptMax2=(" << ptMax2.x << ", " << ptMax2.y << ")" << endl;
+
+					//src.row(i) = Scalar(0, 0, 255);
+					//src.row(i + 1) = Scalar(0, 0, 255);
+
 					points.push_back(ptMax2);
 					goto bottom_label;
 				}
 			}
 		bottom_label:
 
+#ifdef _SHOW_POINTS_
+			circle(src, ptMax2, 5, Scalar(0, 255, 255), -1);
+			line(src, ptMax1, ptMax2, Scalar(192, 192, 0), 2);
+			imshow("src", src);
+			cv::waitKey();
+#endif
 			if (flag == 2)
 			{
 				distance.push_back(sqrt(pow(ptMax1.x - ptMax2.x, 2) + pow(ptMax1.y - ptMax2.y, 2)));
@@ -156,14 +167,39 @@ void SphericalMappingParam::revisedScanLineMethod(Mat imgOrg, Point2i& center, i
 					if (abs(max1 - min1) > threshold)
 					{
 						flag++;
+						//cout << "jump outer1" << endl;
+						//cout << "ptMax1=(" << ptMax1.x << ", " << ptMax1.y << ")" << endl;
 						points.push_back(ptMax1);
-						
+
+						/*						Point start, end;
+						for (int k = 0; k <= i; k++)
+						{
+						x = k;
+						y = -tan(theta)*(x - i);
+						if (k == 0)
+						{
+						start = Point(x, y);
+						}
+						else if (k == i)
+						{
+						end = Point(x, y);
+						}
+
+
+						}
+						line(src, start, end, Scalar(0, 0, 255), 2);*/
+
 						goto outer1;
 					}
 				}
 			}
 		outer1:
 
+#ifdef _SHOW_POINTS_
+			circle(src, ptMax1, 5, Scalar(0, 255, 255), -1);
+			imshow("src", src);
+			cv::waitKey();
+#endif
 
 			for (int i = imgSize.width - 1; i >= 0; i--)
 			{
@@ -189,15 +225,45 @@ void SphericalMappingParam::revisedScanLineMethod(Mat imgOrg, Point2i& center, i
 					{
 						min2 = I;
 					}
+
 					if (abs(max2 - min2) > threshold)
 					{
 						flag++;
+						//cout << "jump outer2" << endl;
+						//cout << "ptMax2=(" << ptMax2.x << ", " << ptMax2.y << ")" << endl;
 						points.push_back(ptMax2);
+
+						//Point start, end;
+						//for (int k = i; k < imgSize.width; k++)
+						//{
+						//	x = k;
+						//	y = imgSize.height - 1 - tan(theta)*(x - i);
+						//	if (k == i)
+						//	{
+						//		start = Point(x, y);
+						//	}
+						//	else if (k == imgSize.width-1)
+						//	{
+						//		end = Point(x, y);
+						//	}
+
+
+						//}
+						//line(src, start, end, Scalar(0, 0, 255), 2);
+
 						goto outer2;
 					}
 				}
 			}
 		outer2:
+			;
+
+#ifdef _SHOW_POINTS_
+			circle(src, ptMax2, 5, Scalar(0, 255, 255), -1);
+			line(src, ptMax1, ptMax2, Scalar(192, 192, 0), 2);
+			imshow("src", src);
+			cv::waitKey();
+#endif
 			if (flag == 2)
 			{
 				distance.push_back(sqrt(pow(ptMax1.x - ptMax2.x, 2) + pow(ptMax1.y - ptMax2.y, 2)));
@@ -206,6 +272,7 @@ void SphericalMappingParam::revisedScanLineMethod(Mat imgOrg, Point2i& center, i
 			{
 				points.pop_back();
 			}
+
 		}
 		else if (N == n)
 		{
@@ -216,11 +283,22 @@ void SphericalMappingParam::revisedScanLineMethod(Mat imgOrg, Point2i& center, i
 				{
 					flag++;
 					ptMax1.x = i;
+					//cout << "vertical left:" << endl;
+					//cout << "ptMax1=(" << ptMax1.x << ", " << ptMax1.y << ")" << endl;
+
+					//src.col(i) = Scalar(0, 0, 255);
+					//src.col(i - 1) = Scalar(0, 0, 255);
 					points.push_back(ptMax1);
 					goto left_label;
 				}
 			}
 		left_label:
+
+#ifdef _SHOW_POINTS_
+			circle(src, ptMax1, 5, Scalar(0, 255, 255), -1);
+			imshow("src", src);
+			cv::waitKey();
+#endif
 
 			for (int i = gray.cols - 1; i >= 0; i--)
 			{
@@ -229,13 +307,25 @@ void SphericalMappingParam::revisedScanLineMethod(Mat imgOrg, Point2i& center, i
 				{
 					flag++;
 					ptMax2.x = i;
+					//cout << "vertical right:" << endl;
+					//cout << "ptMax1=(" << ptMax2.x << ", " << ptMax2.y << ")" << endl;
 					points.push_back(ptMax2);
+
+					//src.col(i) = Scalar(0, 0, 255);
+					//src.col(i + 1) = Scalar(0, 0, 255);
 
 					goto right_label;
 				}
 			}
 
 		right_label:
+
+#ifdef _SHOW_POINTS_
+			circle(src, ptMax2, 5, Scalar(0, 255, 255), -1);
+			line(src, ptMax1, ptMax2, Scalar(192, 192, 0), 2);
+			imshow("src", src);
+			cv::waitKey();
+#endif
 			if (flag == 2)
 			{
 				distance.push_back(sqrt(pow(ptMax1.x - ptMax2.x, 2) + pow(ptMax1.y - ptMax2.y, 2)));
@@ -279,11 +369,35 @@ void SphericalMappingParam::revisedScanLineMethod(Mat imgOrg, Point2i& center, i
 						//cout << "ptMax1=(" << ptMax1.x << ", " << ptMax1.y << ")" << endl;
 						points.push_back(ptMax1);
 
+						//Point start, end;
+						//for (int k = 0; k <= i; k++)
+						//{
+						//	x = k;
+						//	y = imgSize.height - 1 - tan(theta)*(x - i);
+
+						//	if (k == 0)
+						//	{
+						//		start = Point(x, y);
+						//	}
+						//	else if (k == i)
+						//	{
+						//		end = Point(x, y);
+						//	}
+						//}
+						//line(src, start, end, Scalar(0, 0, 255), 2);
+
 						goto outer3;
 					}
 				}
 			}
 		outer3:
+
+#ifdef _SHOW_POINTS_
+			circle(src, ptMax1, 5, Scalar(0, 255, 255), -1);
+			imshow("src", src);
+			cv::waitKey();
+#endif
+
 			for (int i = imgSize.width - 1 / 2; i >= 0; i--)
 			{
 				for (int j = i; j < imgSize.width; j++)
@@ -311,12 +425,41 @@ void SphericalMappingParam::revisedScanLineMethod(Mat imgOrg, Point2i& center, i
 					if (abs(max2 - min2) > threshold)
 					{
 						flag++;
+						//cout << "jump outer4" << endl;
+						//cout << "ptMax2=(" << ptMax2.x << ", " << ptMax2.y << ")" << endl;
 						points.push_back(ptMax2);
+
+						/*			Point start, end;
+						for (int k = i; k < imgSize.width; k++)
+						{
+						x = k;
+						y = -tan(theta)*(x - i);
+						if (k == i)
+						{
+						start = Point(x, y);
+						}
+						else if (k == imgSize.width - 1)
+						{
+						end = Point(x, y);
+						}
+
+
+						}
+						line(src, start, end, Scalar(0, 0, 255), 2);*/
+
 						goto outer4;
 					}
 				}
 			}
 		outer4:
+
+			;
+#ifdef _SHOW_POINTS_
+			circle(src, ptMax2, 5, Scalar(0, 255, 255), -1);
+			line(src, ptMax1, ptMax2, Scalar(192, 192, 0), 2);
+			imshow("src", src);
+			cv::waitKey();
+#endif
 			if (flag == 2)
 			{
 				distance.push_back(sqrt(pow(ptMax1.x - ptMax2.x, 2) + pow(ptMax1.y - ptMax2.y, 2)));
@@ -325,6 +468,7 @@ void SphericalMappingParam::revisedScanLineMethod(Mat imgOrg, Point2i& center, i
 			{
 				points.pop_back();
 			}
+
 		}
 		else
 		{
@@ -332,6 +476,17 @@ void SphericalMappingParam::revisedScanLineMethod(Mat imgOrg, Point2i& center, i
 			break;
 		}
 	}
+
+
+	//vector<Point>::iterator itero = points.begin();
+	//ofstream of("points.txt", ios::trunc | ios::out);
+	//while (itero != points.end())
+	//{
+	//	of << (*itero).x << ", " << (*itero).y << endl;
+	//	itero++;
+	//}
+	//of.close(); 
+
 
 	//find out validate points
 	double mean = 0;
@@ -361,6 +516,7 @@ void SphericalMappingParam::revisedScanLineMethod(Mat imgOrg, Point2i& center, i
 		return;
 	}
 
+	//#ifdef _DEBUG_
 	cout << "Use the Revised ScanLine Method:" << endl
 		<< "\tThe center is (" << center.x << ", "
 		<< center.y << ")" << endl
@@ -369,7 +525,12 @@ void SphericalMappingParam::revisedScanLineMethod(Mat imgOrg, Point2i& center, i
 	circle(src, center, radius, Scalar(0, 0, 255), src.cols / 300);
 	circle(src, center, 5, Scalar(0, 255, 255), -1);
 
+	//cv::namedWindow("Revised ScanLine Method Result", CV_WINDOW_AUTOSIZE);
+	//imshow("Revised ScanLine Method Result", src);
 	imshow(win_name, src);
+	//imwrite("Revised_Scan_ret.tiff", src);
+	//cv::waitKey();
+	//#endif
 
 }
 
@@ -423,233 +584,4 @@ bool SphericalMappingParam::getCircleParatemer(Point2i& c, int& r)
 		return true;
 	}
 	return false;
-}
-
-//光标回调函数
-void SphericalMappingParam::onMouse(int event, int x, int y, int, void* params)
-{
-	Mat src = image.clone();
-	Point pt(x, y);
-	switch (event)
-	{
-	case EVENT_LBUTTONDOWN:
-		circle(src, pt, src.cols*0.005, Scalar(0, 255, 0), -1);
-		imshow(check_win_name, src);
-		points.push_back(pt);
-		if (2 == points.size())
-		{
-			findPoints(center, radius, points);
-			vector<Point>::iterator it = points.begin();
-			while (it != points.end() - 1)
-			{
-				circle(src, *it, src.cols*0.003, Scalar(0, 0, 255), -1);
-				circle(src, *(it + 1), src.cols*0.003, Scalar(0, 0, 255), -1);
-
-				line(src, *it, *(it + 1), Scalar(0, 255, 255), src.cols*0.002);
-				++it;
-			}
-			imshow(check_win_name, src);
-			lines.push_back(points);
-			points.clear();
-		}
-		break;
-	case EVENT_MOUSEMOVE:
-		//cout << "(x, y) = (" << x << ", " << y << ")" << endl;
-	default:
-		;
-	}
-}
-
-void SphericalMappingParam::findPoints(Point2i center, int radius, vector<Point> &points, camMode projMode)
-{
-	vector<Point3f> spherePoints(points.size());
-	vector<Point3f>::iterator itSphere = spherePoints.begin();
-
-	cout << points << endl;
-
-	vector<Point>::iterator it = points.begin();
-
-	while (it != points.end())
-	{
-		int u = it->x;
-		int v = it->y;
-
-		//Convert to cartiesian cooradinate in unity circle
-		int x_cart = (u - center.x);
-		int y_cart = -(v - center.y);
-
-		//convert to polar axes
-		double theta = cvFastArctan(y_cart, x_cart)*PI / 180;
-		double p = sqrt(pow(x_cart, 2) + pow(y_cart, 2));
-
-		double foval = 0.0;
-		double Theta_sphere;
-		switch (projMode)
-		{
-
-		case STEREOGRAPHIC:
-			foval = radius / (2 * tan(FOV / 4));
-			Theta_sphere = 2 * atan(p / (2 * foval));
-			break;
-		case EQUIDISTANCE:
-			foval = radius / (FOV / 2);
-			Theta_sphere = p / foval;
-			break;
-		case EQUISOLID:
-			foval = radius / (2 * sin(FOV / 4));
-			Theta_sphere = 2 * asin(p / (2 * foval));
-			break;
-		case ORTHOGONAL:
-			foval = radius / sin(FOV / 2);
-			Theta_sphere = asin(p / foval);
-			break;
-		default:
-			cout << "The camera mode hasn't been choose!" << endl;
-		}
-
-		//convert to sphere surface parameter cooradinate
-		double Phi_sphere = theta;
-
-		//convert to sphere surface 3D cooradinate
-		itSphere->x = sin(Theta_sphere)*cos(Phi_sphere);
-		itSphere->y = sin(Theta_sphere)*sin(Phi_sphere);
-		itSphere->z = cos(Theta_sphere);
-
-		double temp = itSphere->x*itSphere->x +
-			itSphere->y*itSphere->y +
-			itSphere->z*itSphere->z;
-		cout << "[x, y, z] = " << *itSphere << endl
-			<< "norm = " << sqrt(temp) << endl;
-
-		++it;
-		++itSphere;
-	}
-	///////////////////////////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////
-	double angle = acos(spherePoints[0].dot(spherePoints[1]));
-
-	//double angle = PI;
-	cout << "spherePoints[0]=" << spherePoints[0] << endl;
-	cout << "spherePoints[1]=" << spherePoints[1] << endl;
-
-	Point3f e3 = spherePoints[0].cross(spherePoints[1]);
-	double norm_e3 = norm(e3);
-	e3.x /= norm_e3;
-	e3.y /= norm_e3;
-	e3.z /= norm_e3;
-
-	if (e3.dot(Point3f(0, 0, 1)) < 0)
-	{
-		e3 = spherePoints[1].cross(spherePoints[0]);
-		double norm_e3 = norm(e3);
-		e3.x /= norm_e3;
-		e3.y /= norm_e3;
-		e3.z /= norm_e3;
-
-		//swap shpereSpoint[0] and spherePoints[1]
-		spherePoints[0] = spherePoints[0] + spherePoints[1];
-		spherePoints[1] = spherePoints[0] - spherePoints[1];
-		spherePoints[0] = spherePoints[0] - spherePoints[1];
-
-	}
-	Point3f e1 = spherePoints[0];
-	Point3f e2 = e3.cross(e1);
-
-	cout << "e1.e2=" << e1.dot(e2) << endl
-		<< e2.dot(e3) << endl
-		<< e3.dot(e1) << endl;
-	cout << "norm(e1)=" << norm(e1) << endl << norm(e2) << endl
-		<< norm(e3) << endl;
-	vector<Point3f> tmpK;
-	tmpK.push_back(e1);
-	tmpK.push_back(e2);
-	tmpK.push_back(e3);
-	cout << e1 << endl << e2 << endl << e3 << endl;
-	cout << "tmpK=" << tmpK << endl;
-	Mat K = Mat(tmpK).reshape(1).t(); //从标准空间坐标到报像头空间坐标的变换矩阵
-	cout << "K=" << K << endl;
-	Mat T = K.inv(CV_SVD);//从报像头空间坐标到标准空间坐标平面变换矩阵
-
-	points.clear();
-	const int count = 20;
-	double step = angle / count;
-	double start = 0.0;
-	int l = 0;
-	while (l++ <= count)
-	{
-		Point3f stdPt(cos(start), sin(start), 0);
-		Mat  matPt(stdPt);
-
-		cout << matPt << endl << K << endl;
-		Mat ptSphere(K*matPt);
-		cout << ptSphere << endl;
-		Mat_<double> ptSphere_double;
-		ptSphere.convertTo(ptSphere_double, CV_64F);
-		double x = ptSphere_double.at<double>(0, 0);
-		double y = ptSphere_double.at<double>(1, 0);
-		double z = ptSphere_double.at<double>(2, 0);
-
-		cout << x << ", " << y << ", " << z << endl;
-
-		//Convert from sphere cooradinate to the parameter sphere cooradinate
-		double Theta_sphere = acos(z);
-		double Phi_sphere = cvFastArctan(y, x)*PI / 180;//return value in Angle
-														////////////////////////////////////////////////////////////////////////////////
-
-		double foval = 0.0;
-		double p;
-		switch (projMode)
-		{
-
-		case STEREOGRAPHIC:
-			foval = radius / (2 * tan(FOV / 4));
-			p = 2 * foval*tan(Theta_sphere / 2);
-			break;
-		case EQUIDISTANCE:
-			foval = radius / (FOV / 2);
-			p = foval*Theta_sphere;
-			break;
-		case EQUISOLID:
-			foval = radius / (2 * sin(FOV / 4));
-			p = 2 * foval*sin(Theta_sphere / 2);
-			break;
-		case ORTHOGONAL:
-			foval = radius / sin(FOV / 2);
-			p = foval*sin(Theta_sphere);
-			break;
-		default:
-			cout << "The camera mode hasn't been choose!" << endl;
-		}
-		//Convert from parameter sphere cooradinate to fish-eye polar cooradinate
-		//p = sin(Theta_sphere);
-		double theta = Phi_sphere;
-
-		//Convert from fish-eye polar cooradinate to cartesian cooradinate
-		double x_cart = p*cos(theta);
-		double y_cart = p*sin(theta);
-
-		//double R = radius / sin(camerFieldAngle / 2);
-
-		//Convert from cartesian cooradinate to image cooradinate
-		double u = x_cart + center.x;
-		double v = -y_cart + center.y;
-
-		Point pt = Point(u, v);
-		points.push_back(pt);
-		//////////////////////////////////////////////////////////////////////
-		//////////////////////////////////////////////////////////////////////
-		start += step;
-	}
-	/////////////////////////////////////////////////////////////////////
-	cout << points << endl;
-}
-
-void SphericalMappingParam::checkVarify()
-{
-	namedWindow(check_win_name, CV_WINDOW_NORMAL);
-	resizeWindow(check_win_name, _width, _height);
-	imshow(check_win_name, image);
-	setMouseCallback(check_win_name, onMouse);
-	waitKey();
-	destroyWindow(check_win_name);
 }

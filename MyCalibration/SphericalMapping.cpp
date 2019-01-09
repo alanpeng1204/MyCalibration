@@ -7,6 +7,7 @@ int SphericalMapping::StartMapping(int cam)
 {
 	VideoCapture capture(cam);
 	Mat frame;
+	cout << "Press a to choose the image for calulating." << endl;
 	while (1)
 	{
 		capture >> frame;
@@ -24,7 +25,7 @@ int SphericalMapping::StartMapping(int cam)
 		return -1;
 	}
 	params.imgOrg = frame;
-	assert(SphericalMappingParam::getCircleParatemer(params.center, params.radius));
+	SphericalMappingParam::getCircleParatemer(params.center, params.radius);
 	params.w_longtitude = PI / 2;
 	params.w_latitude = PI / 2;
 	params.distMap = LATITUDE_LONGTITUDE;
@@ -491,8 +492,8 @@ Mat SphericalMapping::latitudeCorrection3(Mat imgOrg, Point2i center, int radius
 	double foval = 0.0;//焦距
 
 
-	Mat_<Vec3b> _retImg = retImg;
-	Mat_<Vec3b> _imgOrg = imgOrg;
+	cv::Mat_<Vec3b> _retImg = retImg;
+	cv::Mat_<Vec3b> _imgOrg = imgOrg;
 
 	//according to the camera type to do the calibration
 	for (int j = 0; j < imgSize.height; j++)
@@ -540,38 +541,38 @@ Mat SphericalMapping::latitudeCorrection3(Mat imgOrg, Point2i center, int radius
 			{
 				//double theta = PI/4;
 				//double phi = -PI/2;
-				Mat curPt(Point3f(x, y, z));
-				std::vector<Point3f> pts;
+				cv::Mat curPt(cv::Point3f(x, y, z));
+				vector<cv::Point3f> pts;
 
 				//向东旋转地球
-				//pts.push_back(Point3f(cos(theta), 0, -sin(theta)));
-				//pts.push_back(Point3f(0, 1, 0));
-				//pts.push_back(Point3f(sin(theta), 0, cos(theta)));
+				//pts.push_back(cv::Point3f(cos(theta), 0, -sin(theta)));
+				//pts.push_back(cv::Point3f(0, 1, 0));
+				//pts.push_back(cv::Point3f(sin(theta), 0, cos(theta)));
 
 				//向南旋转地球
-				//pts.push_back(Point3f(1, 0, 0));
-				//pts.push_back(Point3f(0, cos(phi), sin(phi)));
-				//pts.push_back(Point3f(0, -sin(phi), cos(phi)));
+				//pts.push_back(cv::Point3f(1, 0, 0));
+				//pts.push_back(cv::Point3f(0, cos(phi), sin(phi)));
+				//pts.push_back(cv::Point3f(0, -sin(phi), cos(phi)));
 
 				//两个方向旋转
-				pts.push_back(Point3f(cos(theta_left), 0, sin(theta_left)));
-				pts.push_back(Point3f(sin(phi_up)*sin(theta_left), cos(phi_up), -sin(phi_up)*cos(theta_left)));
-				pts.push_back(Point3f(-cos(phi_up)*sin(theta_left), sin(phi_up), cos(phi_up)*cos(theta_left)));
+				pts.push_back(cv::Point3f(cos(theta_left), 0, sin(theta_left)));
+				pts.push_back(cv::Point3f(sin(phi_up)*sin(theta_left), cos(phi_up), -sin(phi_up)*cos(theta_left)));
+				pts.push_back(cv::Point3f(-cos(phi_up)*sin(theta_left), sin(phi_up), cos(phi_up)*cos(theta_left)));
 
 
-				Mat revert = Mat(pts).reshape(1).t();
+				cv::Mat revert = cv::Mat(pts).reshape(1).t();
 
-				Mat changed(revert*curPt);
+				cv::Mat changed(revert*curPt);
 
-				Mat_<double> changed_double;
+				cv::Mat_<double> changed_double;
 				changed.convertTo(changed_double, CV_64F);
 
 				x = changed_double.at<double>(0, 0);
 				y = changed_double.at<double>(1, 0);
 				z = changed_double.at<double>(2, 0);
 
-				//std::cout << curPt << std::endl
-				//	<<revert<<std::endl;
+				//cout << curPt << endl
+				//	<<revert<<endl;
 			}
 
 			//Convert from unit sphere cooradinate to the parameter sphere cooradinate
@@ -627,12 +628,15 @@ Mat SphericalMapping::latitudeCorrection3(Mat imgOrg, Point2i center, int radius
 		}
 	}
 
+	//imshow("org", _imgOrg);
+	//imshow("ret", _retImg);
+	//cv::waitKey();
 #ifdef _DEBUG_
-	namedWindow("Corrected Image", CV_WINDOW_AUTOSIZE);
+	cv::namedWindow("Corrected Image", CV_WINDOW_AUTOSIZE);
 	imshow("Corrected Image", retImg);
-	waitKey();
+	cv::waitKey();
 #endif
-
+	//imwrite("ret.jpg", retImg);
 	return retImg;
 }
 

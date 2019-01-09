@@ -34,7 +34,7 @@ private:
 	};
 
 	SphereParameters params;
-	string win_name = "correctImage";
+	string win_name = "Spherical Mapping";
 
 	Mat correctImage(correctMethod method, bool isDispRet);
 	Mat latitudeCorrection(Mat imgOrg, Point2i center, int radius, double camerFieldAngle, CorrectType type); Mat latitudeCorrection2(Mat imgOrg, Point2i center, int radius, distMapMode distMap = LATITUDE_LONGTITUDE, double camerFieldAngle = PI, camMode camProjMode = EQUIDISTANCE);

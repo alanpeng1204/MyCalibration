@@ -4,7 +4,7 @@
 #define ChessBoardWidth 6
 #define ChessBoardHeight 9
 
-#define Square_Size 20	//mm
+#define Square_Size 9	//mm
 
 
 class FisheyeCalibration
