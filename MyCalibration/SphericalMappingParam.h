@@ -9,7 +9,6 @@ public:
 	SphericalMappingParam() {};
 	static int CalculateParam(Mat img);
 	static bool getCircleParatemer(Point2i& c, int& r);
-	static void checkVarify();
 
 	static const double FOV;
 private:

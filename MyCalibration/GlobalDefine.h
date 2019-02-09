@@ -37,3 +37,9 @@ enum CorrectType
 	//image to the origin distorted image, this method can be sure for that every pixels
 	//on the rectified image have its corresponding origin pixel.
 };
+
+struct Circle
+{
+	Point center;
+	int radius;
+};

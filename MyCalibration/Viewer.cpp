@@ -21,7 +21,7 @@ void Viewer::SetParam(double aH, double aV)
 
 Mat Viewer::ConvertImage(Mat image)
 {
-
+	return Mat();
 }
 
 
