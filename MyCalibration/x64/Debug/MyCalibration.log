@@ -1,5 +1,4 @@
 ﻿  MyMapping.cpp
-e:\毕业设计内容\mycalibration\mycalibration\mymapping.cpp(47): warning C4805: “==”: 在操作中将类型“bool”与类型“double”混合不安全
-e:\毕业设计内容\mycalibration\mycalibration\mymapping.cpp(56): warning C4244: “参数”: 从“double”转换到“int”，可能丢失数据
-e:\毕业设计内容\mycalibration\mycalibration\mymapping.cpp(89): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+e:\毕业设计内容\mycalibration\mycalibration\mymapping.cpp(106): warning C4805: “==”: 在操作中将类型“bool”与类型“double”混合不安全
+e:\毕业设计内容\mycalibration\mycalibration\mymapping.cpp(115): warning C4244: “参数”: 从“double”转换到“int”，可能丢失数据
   MyCalibration.vcxproj -> E:\毕业设计内容\MyCalibration\x64\Debug\MyCalibration.exe

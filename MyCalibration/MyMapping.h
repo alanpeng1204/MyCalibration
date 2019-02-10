@@ -9,10 +9,11 @@ public:
 
 private:
 	int CalculateMap(Point3d direction, int FOV = 90);
-	int CalculateEdge(int R, int FOV);
+	double CalculateEdge(int R, int FOV);
+
 	vector<Circle> circles;
 	string win_name = "My Mapping";
 	int Cam_Num = 0;
-	Mat map_x, map_y;
+	Mat map_x, map_y;	//”≥…‰±Ì
 };
 

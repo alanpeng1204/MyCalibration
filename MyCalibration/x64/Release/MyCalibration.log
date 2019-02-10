@@ -1,11 +1,10 @@
-﻿  MyCalibration.cpp
-  MyMapping.cpp
-MyMapping.cpp(47): warning C4805: “==”: 在操作中将类型“bool”与类型“double”混合不安全
-MyMapping.cpp(56): warning C4244: “参数”: 从“double”转换到“int”，可能丢失数据
-MyMapping.cpp(89): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+﻿  MyMapping.cpp
+MyMapping.cpp(106): warning C4805: “==”: 在操作中将类型“bool”与类型“double”混合不安全
+MyMapping.cpp(115): warning C4244: “参数”: 从“double”转换到“int”，可能丢失数据
+MyMapping.cpp(148): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
   正在生成代码
-  42 of 997 functions ( 4.2%) were compiled, the rest were copied from previous compilation.
-    2 functions were new in current compilation
-    16 functions had inline decision re-evaluated but remain unchanged
+  2 of 1062 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
   已完成代码的生成
   MyCalibration.vcxproj -> E:\毕业设计内容\MyCalibration\x64\Release\MyCalibration.exe
